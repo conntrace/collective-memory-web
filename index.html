@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collective Memory</title>
+    <link rel="stylesheet" href="https://use.typekit.net/ohy6tqg.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: #f0f0f0;
+            font-family: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* === PAGE LOGO === */
+        .page-logo {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            height: 80px;
+            z-index: 100;
+            opacity: 0.8;
+        }
+
+        /* === SPLIT LAYOUT === */
+        #main-layout {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Left side: interaction area (email / camera) */
+        #left-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            transition: background-color 0.5s ease;
+        }
+
+        #left-panel.camera-active {
+            background-color: #323232;
+        }
+
+        /* Right side: collective display */
+        #right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+            border-left: 1px solid #e0e0e0;
+            padding: 40px;
+        }
+
+        /* === EMAIL SECTION (in left panel) === */
+        .left-content {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .left-content.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.97);
+        }
+        .left-content.visible {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1);
+        }
+
+        .container {
+            background: white;
+            padding: 50px 60px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            font-family: 'larken', 'Times New Roman', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #323232;
+            margin-bottom: 16px;
+        }
+        .subtitle {
+            color: #646464;
+            font-size: 16px;
+            margin-bottom: 32px;
+            font-weight: 300;
+        }
+        input[type="email"] {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            outline: none;
+            font-family: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
+            transition: border-color 0.3s;
+            margin-bottom: 8px;
+        }
+        input[type="email"]:focus { border-color: #646464; }
+        .error {
+            color: #e53935;
+            font-size: 14px;
+            margin-bottom: 12px;
+            display: none;
+            min-height: 20px;
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .form-btn {
+            flex: 1;
+            padding: 14px;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        #skip-btn {
+            background: #e6e6e6;
+            color: #646464;
+        }
+        #skip-btn:hover { background: #d0d0d0; }
+        #submit-btn {
+            background: #646464;
+            color: #ffffff;
+        }
+        #submit-btn:hover { background: #4a4a4a; }
+        .disclaimer {
+            font-size: 11px;
+            color: #999;
+            line-height: 1.6;
+        }
+        .disclaimer a {
+            color: #646464;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* === WAIVER MODAL === */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin: 20px;
+        }
+        .modal-content h2 {
+            font-family: 'larken', serif;
+            font-size: 22px;
+            color: #323232;
+            margin-bottom: 24px;
+        }
+        .modal-content p {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+        .modal-content ul {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.8;
+            margin: 0 0 16px 24px;
+        }
+
+        /* === CAMERA SECTION (in left panel) === */
+        #camera-section {
+            flex-direction: column;
+        }
+        .camera-wrapper {
+            position: relative;
+            max-width: 100%;
+            max-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .camera-wrapper video {
+            max-width: 90%;
+            max-height: 60vh;
+            border-radius: 12px;
+            transform: scaleX(-1);
+        }
+        .camera-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            border-radius: 12px;
+        }
+        .countdown-number {
+            font-family: 'larken', serif;
+            font-size: 180px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            display: none;
+        }
+        .camera-status {
+            color: #ccc;
+            font-size: 18px;
+            margin-top: 14px;
+            min-height: 24px;
+            text-align: center;
+        }
+        #take-photo-btn {
+            margin-top: 24px;
+            padding: 20px 60px;
+            font-size: 22px;
+            font-weight: 500;
+            background: white;
+            color: #323232;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+        #take-photo-btn:hover { background: #e0e0e0; transform: scale(1.02); }
+        #take-photo-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* === PROCESSING OVERLAY (on left panel) === */
+        #processing-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: rgba(50, 50, 50, 0.9);
+            z-index: 50;
+        }
+        #processing-overlay.active {
+            display: flex;
+        }
+        .processing-message {
+            color: white;
+            font-size: 24px;
+            font-weight: 300;
+        }
+        .processing-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 24px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* === SUCCESS TOAST === */
+        #success-toast {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: rgba(50, 50, 50, 0.95);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 16px;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            z-index: 60;
+        }
+        #success-toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        #success-toast h3 {
+            font-family: 'larken', serif;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        #success-toast p {
+            font-size: 18px;
+            font-weight: 300;
+            opacity: 0.8;
+        }
+
+        /* === RIGHT PANEL — COLLECTIVE DISPLAY === */
+        #collective-canvas {
+            max-width: 85%;
+            max-height: 70vh;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        .display-info {
+            text-align: center;
+            margin-top: 24px;
+        }
+        .display-info h2 {
+            font-family: 'larken', serif;
+            font-size: 32px;
+            color: #323232;
+            margin-bottom: 6px;
+        }
+        .display-counter {
+            font-size: 18px;
+            color: #646464;
+        }
+
+        /* Placeholder when no collective image yet */
+        #collective-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 400px;
+            height: 400px;
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            color: #999;
+            text-align: center;
+            padding: 40px;
+        }
+        #collective-placeholder h3 {
+            font-family: 'larken', serif;
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #bbb;
+        }
+        #collective-placeholder p {
+            font-size: 16px;
+            font-weight: 300;
+            line-height: 1.5;
+        }
+
+        /* Crossfade for collective update */
+        #collective-canvas {
+            transition: opacity 0.3s ease;
+        }
+        #collective-canvas.flash {
+            opacity: 0.6;
+        }
+
+        /* Hidden utility */
+        .hidden-canvas { display: none; }
+
+        /* Loading indicator */
+        #loading-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 200;
+            display: none;
+        }
+        #loading-indicator.show { display: block; }
+    </style>
+</head>
+<body>
+
+    <img class="page-logo" src="UDC logo-HORIZ-1PMS_white.png" alt="UDC Logo">
+
+    <!-- WAIVER MODAL -->
+    <div class="modal-overlay" id="waiver-modal">
+        <div class="modal-content">
+            <h2>Electronic Photo &amp; Participation Waiver</h2>
+            <p><strong>We Are All CAS - College of Arts and Sciences Reception</strong><br>(175 Years of Learning and Legacy)</p>
+            <p>By participating in We Are All CAS, I acknowledge and agree to the following:</p>
+            <p><strong>1. Consent to Photography</strong><br>I voluntarily consent to being photographed as part of this interactive art project during the College of Arts and Sciences reception at the University of the District of Columbia, held in connection with the celebration "175 Years of Learning and Legacy."</p>
+            <p><strong>2. Use of Image</strong><br>I understand that my photograph will be digitally processed and combined with other participants' images to create a composite artwork. I grant permission for my image to be used for:</p>
+            <ul>
+                <li>Artistic and educational purposes</li>
+                <li>Exhibition and display related to the project</li>
+                <li>Documentation and promotion of the project, the event, and the 175th anniversary celebration (including websites and digital platforms)</li>
+            </ul>
+            <p><strong>3. Optional Artwork Purchase</strong><br>I understand that I may choose to purchase a printed, signed, and framed version of the artwork. Purchasing is optional and not required to participate.</p>
+            <p><strong>4. No Expectation of Compensation</strong><br>I acknowledge that participation is voluntary and that I will not receive financial compensation for the use of my image, aside from the option to purchase artwork if I choose.</p>
+            <p><strong>5. Email Use</strong><br>I understand that my email address is collected solely to provide access to the resulting artwork and project-related communication. My email will not be sold or shared with third parties.</p>
+            <p><strong>6. Right to Withdraw</strong><br>I understand that I may request removal of my image from future uses of the project by contacting the project organizer within a reasonable time following the event.</p>
+        </div>
+    </div>
+
+    <!-- MAIN SPLIT LAYOUT -->
+    <div id="main-layout">
+
+        <!-- LEFT PANEL: Email / Camera -->
+        <div id="left-panel">
+
+            <!-- Email Entry -->
+            <div id="email-section" class="left-content visible">
+                <div class="container">
+                    <h1>We Are All CAS</h1>
+                    <p class="subtitle">Enter your email to receive your collective portrait after the event</p>
+
+                    <div id="form-area">
+                        <input type="email" id="email-input" placeholder="your@email.com" autocomplete="off">
+                        <div class="error" id="error-msg">Please enter a valid email address</div>
+
+                        <div class="button-group">
+                            <button class="form-btn" id="skip-btn">Skip</button>
+                            <button class="form-btn" id="submit-btn">Continue</button>
+                        </div>
+
+                        <p class="disclaimer">By entering my email, I confirm that I have read, understood, and agreed to the <a id="waiver-link">Photo &amp; Participation Waiver</a> for We Are All CAS. This project is an artistic and educational activity affiliated with the College of Arts and Sciences and the University of the District of Columbia. Participation is voluntary.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Camera View -->
+            <div id="camera-section" class="left-content hidden">
+                <div class="camera-wrapper">
+                    <video id="camera-feed" autoplay playsinline></video>
+                    <div class="camera-overlay">
+                        <div class="countdown-number" id="countdown-display"></div>
+                    </div>
+                </div>
+                <p class="camera-status" id="camera-status">Initializing camera...</p>
+                <button id="take-photo-btn" disabled>Take Photo</button>
+            </div>
+
+            <!-- Processing Overlay -->
+            <div id="processing-overlay">
+                <div class="processing-spinner"></div>
+                <p class="processing-message">Creating your collective portrait...</p>
+            </div>
+
+            <!-- Success Toast -->
+            <div id="success-toast">
+                <h3>You're part of the collective!</h3>
+                <p>Participant #<span id="toast-count">0</span></p>
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL: Collective Display -->
+        <div id="right-panel">
+
+            <!-- Placeholder before first participant -->
+            <div id="collective-placeholder">
+                <h3>Collective Memory</h3>
+                <p>The collective portrait will appear here as participants are added</p>
+            </div>
+
+            <!-- Collective canvas (hidden until first face) -->
+            <canvas id="collective-canvas" width="1024" height="1024" style="display: none;"></canvas>
+
+            <div class="display-info">
+                <h2>Collective Memory</h2>
+                <p class="display-counter">Participants: <span id="display-count">0</span></p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loading-indicator">Syncing...</div>
+
+    <!-- Hidden work canvases -->
+    <canvas id="work-canvas" class="hidden-canvas"></canvas>
+    <canvas id="align-canvas" class="hidden-canvas"></canvas>
+
+    <script type="module">
+        // ============================================================
+        // COLLECTIVE MEMORY — WEB VERSION (Split-Screen + Supabase)
+        // Left: email entry + camera  |  Right: live collective
+        // Persistence: Supabase (database + storage + realtime)
+        // ============================================================
+
+        import { FaceLandmarker, FilesetResolver } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/+esm';
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        // === SUPABASE CONFIG ===
+        const SUPABASE_URL = 'https://iwksbbhgytttsdjzckku.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3a3NiYmhneXR0dHNkanpja2t1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NTQwODQsImV4cCI6MjA4NzAzMDA4NH0.X6huRY7X6OyaGywpfCcQ3BcRtgNeBZgy3zl4IOtfOWg';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // === CONSTANTS ===
+        const FACE_SIZE = 1024;
+        const TARGET_EYE_DIST_FRAC = 0.20;
+        const TARGET_EYE_Y = 0.38;
+        const TARGET_LEFT_EYE = [0.40, TARGET_EYE_Y];
+        const TARGET_RIGHT_EYE = [0.60, TARGET_EYE_Y];
+        const LEFT_EYE_INDICES = [33, 133, 159, 145];
+        const RIGHT_EYE_INDICES = [362, 263, 386, 374];
+        const FACE_STABLE_TIME = 1.5;
+        const COUNTDOWN_DURATION = 5;
+        const CENTER_THRESHOLD = 0.20;
+        const STORAGE_BUCKET = 'collective-memory';
+        const COLLECTIVE_FILE = 'collective.jpg';
+
+        // === STATE ===
+        let faceLandmarker = null;
+        let videoStream = null;
+        let faceCount = 0;
+        let collectiveData = null;  // Float32Array
+        let currentView = 'email';
+        let faceStableStart = null;
+        let countdownActive = false;
+        let animFrameId = null;
+
+        // === DOM ELEMENTS ===
+        const leftPanel = document.getElementById('left-panel');
+        const emailSection = document.getElementById('email-section');
+        const cameraSection = document.getElementById('camera-section');
+        const processingOverlay = document.getElementById('processing-overlay');
+        const successToast = document.getElementById('success-toast');
+        const emailInput = document.getElementById('email-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const skipBtn = document.getElementById('skip-btn');
+        const errorMsg = document.getElementById('error-msg');
+        const cameraFeed = document.getElementById('camera-feed');
+        const cameraStatus = document.getElementById('camera-status');
+        const takePhotoBtn = document.getElementById('take-photo-btn');
+        const countdownDisplay = document.getElementById('countdown-display');
+        const workCanvas = document.getElementById('work-canvas');
+        const alignCanvas = document.getElementById('align-canvas');
+        const collectiveCanvas = document.getElementById('collective-canvas');
+        const collectivePlaceholder = document.getElementById('collective-placeholder');
+        const displayCount = document.getElementById('display-count');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        // === LOADING INDICATOR ===
+        function showLoading(msg) {
+            loadingIndicator.textContent = msg || 'Syncing...';
+            loadingIndicator.classList.add('show');
+        }
+        function hideLoading() {
+            loadingIndicator.classList.remove('show');
+        }
+
+        // === SUPABASE: Load existing collective on page load ===
+        async function loadExistingCollective() {
+            try {
+                // Get current face count from state table
+                const { data: stateData, error: stateErr } = await supabase
+                    .from('state')
+                    .select('face_count')
+                    .eq('id', 1)
+                    .single();
+
+                if (stateErr) {
+                    console.warn('Could not load state:', stateErr.message);
+                } else if (stateData && stateData.face_count > 0) {
+                    faceCount = stateData.face_count;
+                    displayCount.textContent = faceCount;
+                    console.log('Loaded face count from Supabase:', faceCount);
+
+                    // Download the collective image from storage
+                    const { data: fileData, error: dlErr } = await supabase.storage
+                        .from(STORAGE_BUCKET)
+                        .download(COLLECTIVE_FILE);
+
+                    if (dlErr) {
+                        console.warn('Could not download collective image:', dlErr.message);
+                    } else {
+                        // Convert blob to ImageData and load into collectiveData
+                        const bitmap = await createImageBitmap(fileData);
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = FACE_SIZE;
+                        tempCanvas.height = FACE_SIZE;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.drawImage(bitmap, 0, 0, FACE_SIZE, FACE_SIZE);
+                        const imgData = tempCtx.getImageData(0, 0, FACE_SIZE, FACE_SIZE);
+
+                        // Load into Float32Array
+                        collectiveData = new Float32Array(FACE_SIZE * FACE_SIZE * 4);
+                        for (let i = 0; i < imgData.data.length; i++) {
+                            collectiveData[i] = imgData.data[i];
+                        }
+
+                        // Show on the right panel
+                        updateCollectiveDisplay(getCollectiveImageData());
+                        console.log('Loaded collective image from Supabase Storage');
+                    }
+                }
+            } catch (err) {
+                console.warn('Error loading existing collective:', err);
+            }
+        }
+
+        // === SUPABASE: Save collective after each blend ===
+        async function saveCollectiveToSupabase(email) {
+            showLoading('Saving to cloud...');
+            try {
+                // 1. Upload collective image to storage
+                const canvas = document.createElement('canvas');
+                canvas.width = FACE_SIZE;
+                canvas.height = FACE_SIZE;
+                canvas.getContext('2d').putImageData(getCollectiveImageData(), 0, 0);
+
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+
+                const { error: uploadErr } = await supabase.storage
+                    .from(STORAGE_BUCKET)
+                    .upload(COLLECTIVE_FILE, blob, {
+                        cacheControl: '0',
+                        upsert: true,
+                        contentType: 'image/jpeg'
+                    });
+
+                if (uploadErr) {
+                    console.error('Upload error:', uploadErr.message);
+                }
+
+                // 2. Also save a snapshot for this participant
+                const snapshotName = `snapshots/participant_${String(faceCount).padStart(4, '0')}.jpg`;
+                await supabase.storage
+                    .from(STORAGE_BUCKET)
+                    .upload(snapshotName, blob, {
+                        cacheControl: '3600',
+                        upsert: true,
+                        contentType: 'image/jpeg'
+                    });
+
+                // 3. Insert participant row
+                const { error: insertErr } = await supabase
+                    .from('participants')
+                    .insert({
+                        email: email || null,
+                        participant_number: faceCount
+                    });
+
+                if (insertErr) {
+                    console.error('Participant insert error:', insertErr.message);
+                }
+
+                // 4. Update state (face count)
+                const { error: stateErr } = await supabase
+                    .from('state')
+                    .update({ face_count: faceCount, updated_at: new Date().toISOString() })
+                    .eq('id', 1);
+
+                if (stateErr) {
+                    console.error('State update error:', stateErr.message);
+                }
+
+                console.log(`Saved participant #${faceCount} to Supabase`);
+            } catch (err) {
+                console.error('Supabase save error:', err);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // === SUPABASE: Realtime subscription for live updates ===
+        function subscribeToRealtime() {
+            supabase
+                .channel('collective-updates')
+                .on('postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'participants' },
+                    async (payload) => {
+                        console.log('Realtime: new participant', payload.new);
+
+                        // Another device added a participant — fetch the updated collective
+                        const newCount = payload.new.participant_number;
+
+                        // Only fetch if this is a higher count than what we have
+                        // (avoid re-fetching our own submissions)
+                        if (newCount > faceCount) {
+                            faceCount = newCount;
+                            displayCount.textContent = faceCount;
+
+                            // Download updated collective image
+                            try {
+                                const { data: fileData, error: dlErr } = await supabase.storage
+                                    .from(STORAGE_BUCKET)
+                                    .download(COLLECTIVE_FILE + '?t=' + Date.now());
+
+                                if (!dlErr && fileData) {
+                                    const bitmap = await createImageBitmap(fileData);
+                                    const tempCanvas = document.createElement('canvas');
+                                    tempCanvas.width = FACE_SIZE;
+                                    tempCanvas.height = FACE_SIZE;
+                                    const tempCtx = tempCanvas.getContext('2d');
+                                    tempCtx.drawImage(bitmap, 0, 0, FACE_SIZE, FACE_SIZE);
+                                    const imgData = tempCtx.getImageData(0, 0, FACE_SIZE, FACE_SIZE);
+
+                                    // Update local collectiveData
+                                    collectiveData = new Float32Array(FACE_SIZE * FACE_SIZE * 4);
+                                    for (let i = 0; i < imgData.data.length; i++) {
+                                        collectiveData[i] = imgData.data[i];
+                                    }
+
+                                    updateCollectiveDisplay(getCollectiveImageData());
+                                    console.log('Realtime: updated collective from storage');
+                                }
+                            } catch (err) {
+                                console.warn('Realtime fetch error:', err);
+                            }
+                        }
+                    }
+                )
+                .subscribe((status) => {
+                    console.log('Realtime subscription status:', status);
+                });
+        }
+
+        // === INITIALIZE MEDIAPIPE ===
+        async function initFaceLandmarker() {
+            cameraStatus.textContent = 'Loading face detection model...';
+            const vision = await FilesetResolver.forVisionTasks(
+                'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm'
+            );
+            faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
+                    delegate: 'GPU'
+                },
+                runningMode: 'VIDEO',
+                numFaces: 1,
+                minFaceDetectionConfidence: 0.5,
+                minFacePresenceConfidence: 0.5,
+                minTrackingConfidence: 0.5,
+            });
+            console.log('FaceLandmarker ready');
+        }
+
+        // === CAMERA ===
+        async function startCamera() {
+            try {
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+                });
+                cameraFeed.srcObject = videoStream;
+                await new Promise(resolve => cameraFeed.onloadedmetadata = resolve);
+                cameraFeed.play();
+                cameraStatus.textContent = 'Press "Take Photo" when ready';
+                takePhotoBtn.disabled = false;
+            } catch (err) {
+                cameraStatus.textContent = 'Camera access denied. Please allow camera access and reload.';
+                console.error('Camera error:', err);
+            }
+        }
+
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(t => t.stop());
+                videoStream = null;
+            }
+            if (animFrameId) {
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+            }
+        }
+
+        // === FACE DETECTION ===
+        function getEyeCenters(landmarks, w, h) {
+            const avg = (indices) => {
+                let sx = 0, sy = 0;
+                for (const i of indices) {
+                    sx += landmarks[i].x * w;
+                    sy += landmarks[i].y * h;
+                }
+                return [sx / indices.length, sy / indices.length];
+            };
+            return { left: avg(LEFT_EYE_INDICES), right: avg(RIGHT_EYE_INDICES) };
+        }
+
+        function detectFace(timestamp) {
+            if (!faceLandmarker || !cameraFeed.videoWidth) return null;
+
+            const results = faceLandmarker.detectForVideo(cameraFeed, timestamp);
+            if (!results.faceLandmarks || results.faceLandmarks.length === 0) {
+                return { detected: false, centered: false };
+            }
+
+            const landmarks = results.faceLandmarks[0];
+            const w = cameraFeed.videoWidth;
+            const h = cameraFeed.videoHeight;
+            const eyes = getEyeCenters(landmarks, w, h);
+
+            const midX = (eyes.left[0] + eyes.right[0]) / 2;
+            const centered = Math.abs(midX - w / 2) < w * CENTER_THRESHOLD;
+
+            return { detected: true, centered, eyes, landmarks, w, h };
+        }
+
+        // === FACE ALIGNMENT ===
+        function alignFace(videoEl) {
+            workCanvas.width = videoEl.videoWidth;
+            workCanvas.height = videoEl.videoHeight;
+            const wCtx = workCanvas.getContext('2d');
+            wCtx.translate(workCanvas.width, 0);
+            wCtx.scale(-1, 1);
+            wCtx.drawImage(videoEl, 0, 0);
+            wCtx.setTransform(1, 0, 0, 1, 0, 0);
+
+            const results = faceLandmarker.detectForVideo(videoEl, performance.now());
+            if (!results.faceLandmarks || results.faceLandmarks.length === 0) {
+                return null;
+            }
+
+            const landmarks = results.faceLandmarks[0];
+            const fw = videoEl.videoWidth;
+            const fh = videoEl.videoHeight;
+
+            // Eye centers (in mirrored coordinates)
+            // After mirroring, MediaPipe's LEFT_EYE becomes screen-right and vice versa
+            const mirroredLeftPts = RIGHT_EYE_INDICES.map(i => [
+                fw - landmarks[i].x * fw,
+                landmarks[i].y * fh
+            ]);
+            const mirroredRightPts = LEFT_EYE_INDICES.map(i => [
+                fw - landmarks[i].x * fw,
+                landmarks[i].y * fh
+            ]);
+
+            const leftEye = [
+                mirroredLeftPts.reduce((s, p) => s + p[0], 0) / mirroredLeftPts.length,
+                mirroredLeftPts.reduce((s, p) => s + p[1], 0) / mirroredLeftPts.length
+            ];
+            const rightEye = [
+                mirroredRightPts.reduce((s, p) => s + p[0], 0) / mirroredRightPts.length,
+                mirroredRightPts.reduce((s, p) => s + p[1], 0) / mirroredRightPts.length
+            ];
+
+            const dx = rightEye[0] - leftEye[0];
+            const dy = rightEye[1] - leftEye[1];
+            const angle = Math.atan2(dy, dx);
+            const eyeDist = Math.sqrt(dx * dx + dy * dy);
+            const targetEyeDist = TARGET_EYE_DIST_FRAC * FACE_SIZE;
+            const scale = targetEyeDist / eyeDist;
+
+            const eyeMid = [(leftEye[0] + rightEye[0]) / 2, (leftEye[1] + rightEye[1]) / 2];
+            const targetMidX = (TARGET_LEFT_EYE[0] + TARGET_RIGHT_EYE[0]) / 2 * FACE_SIZE;
+            const targetMidY = (TARGET_LEFT_EYE[1] + TARGET_RIGHT_EYE[1]) / 2 * FACE_SIZE;
+
+            alignCanvas.width = FACE_SIZE;
+            alignCanvas.height = FACE_SIZE;
+            const aCtx = alignCanvas.getContext('2d');
+
+            aCtx.save();
+            aCtx.translate(targetMidX, targetMidY);
+            aCtx.rotate(-angle);
+            aCtx.scale(scale, scale);
+            aCtx.translate(-eyeMid[0], -eyeMid[1]);
+            aCtx.drawImage(workCanvas, 0, 0);
+            aCtx.restore();
+
+            return aCtx.getImageData(0, 0, FACE_SIZE, FACE_SIZE);
+        }
+
+        // === BLENDING ===
+        function blendFace(newFaceData) {
+            faceCount++;
+            const weight = 1.0 / faceCount;
+
+            if (!collectiveData) {
+                collectiveData = new Float32Array(FACE_SIZE * FACE_SIZE * 4);
+                for (let i = 0; i < newFaceData.data.length; i++) {
+                    collectiveData[i] = newFaceData.data[i];
+                }
+            } else {
+                for (let i = 0; i < collectiveData.length; i += 4) {
+                    collectiveData[i]     = collectiveData[i]     * (1 - weight) + newFaceData.data[i]     * weight;
+                    collectiveData[i + 1] = collectiveData[i + 1] * (1 - weight) + newFaceData.data[i + 1] * weight;
+                    collectiveData[i + 2] = collectiveData[i + 2] * (1 - weight) + newFaceData.data[i + 2] * weight;
+                    collectiveData[i + 3] = 255;
+                }
+            }
+
+            return getCollectiveImageData();
+        }
+
+        function getCollectiveImageData() {
+            const imgData = new ImageData(FACE_SIZE, FACE_SIZE);
+            for (let i = 0; i < collectiveData.length; i++) {
+                imgData.data[i] = Math.max(0, Math.min(255, Math.round(collectiveData[i])));
+            }
+            return imgData;
+        }
+
+        // === LEFT PANEL VIEW SWITCHING ===
+        function showEmailView() {
+            currentView = 'email';
+            emailSection.className = 'left-content visible';
+            cameraSection.className = 'left-content hidden';
+            leftPanel.classList.remove('camera-active');
+        }
+
+        function showCameraView() {
+            currentView = 'camera';
+            emailSection.className = 'left-content hidden';
+            cameraSection.className = 'left-content visible';
+            leftPanel.classList.add('camera-active');
+        }
+
+        // === UPDATE COLLECTIVE DISPLAY (RIGHT PANEL) ===
+        function updateCollectiveDisplay(imgData) {
+            collectivePlaceholder.style.display = 'none';
+            collectiveCanvas.style.display = 'block';
+
+            collectiveCanvas.classList.add('flash');
+
+            collectiveCanvas.width = FACE_SIZE;
+            collectiveCanvas.height = FACE_SIZE;
+            collectiveCanvas.getContext('2d').putImageData(imgData, 0, 0);
+
+            displayCount.textContent = faceCount;
+
+            setTimeout(() => {
+                collectiveCanvas.classList.remove('flash');
+            }, 100);
+        }
+
+        // === EMAIL VALIDATION ===
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+        }
+
+        // === FACE DETECTION LOOP ===
+        function startFaceDetectionLoop() {
+            faceStableStart = null;
+            countdownActive = false;
+
+            function loop() {
+                if (currentView !== 'camera' || countdownActive) {
+                    animFrameId = requestAnimationFrame(loop);
+                    return;
+                }
+
+                const result = detectFace(performance.now());
+
+                if (!result || !result.detected) {
+                    cameraStatus.textContent = 'No face detected';
+                    faceStableStart = null;
+                } else if (!result.centered) {
+                    cameraStatus.textContent = 'Move to the center';
+                    faceStableStart = null;
+                } else {
+                    if (!faceStableStart) faceStableStart = performance.now();
+                    const elapsed = (performance.now() - faceStableStart) / 1000;
+                    const remaining = Math.max(0, FACE_STABLE_TIME - elapsed).toFixed(1);
+
+                    if (elapsed >= FACE_STABLE_TIME) {
+                        cameraStatus.textContent = 'Ready! Press "Take Photo"';
+                    } else {
+                        cameraStatus.textContent = `Hold still: ${remaining}s`;
+                    }
+                }
+
+                animFrameId = requestAnimationFrame(loop);
+            }
+
+            animFrameId = requestAnimationFrame(loop);
+        }
+
+        // === COUNTDOWN ===
+        async function startCountdown() {
+            countdownActive = true;
+            takePhotoBtn.disabled = true;
+            countdownDisplay.style.display = 'block';
+
+            for (let i = COUNTDOWN_DURATION; i > 0; i--) {
+                const result = detectFace(performance.now());
+                if (!result || !result.detected) {
+                    countdownDisplay.style.display = 'none';
+                    countdownActive = false;
+                    takePhotoBtn.disabled = false;
+                    cameraStatus.textContent = 'Face lost — try again';
+                    faceStableStart = null;
+                    return false;
+                }
+
+                countdownDisplay.textContent = i;
+                if (i <= 3) {
+                    cameraStatus.textContent = 'Look at the camera!';
+                } else {
+                    cameraStatus.textContent = `Capturing in ${i}...`;
+                }
+
+                await new Promise(r => setTimeout(r, 1000));
+            }
+
+            countdownDisplay.style.display = 'none';
+            countdownActive = false;
+            return true;
+        }
+
+        // === CAPTURE & PROCESS ===
+        async function captureFromLiveFeed(email) {
+            const success = await startCountdown();
+            if (!success) return;
+
+            cameraStatus.textContent = 'Processing...';
+            takePhotoBtn.disabled = true;
+
+            // Align from live video feed
+            const alignedFace = alignFace(cameraFeed);
+
+            // Show processing overlay on left panel
+            processingOverlay.classList.add('active');
+
+            await new Promise(r => setTimeout(r, 300));
+
+            stopCamera();
+
+            if (!alignedFace) {
+                processingOverlay.classList.remove('active');
+                showCameraView();
+                await startCamera();
+                if (!faceLandmarker) await initFaceLandmarker();
+                startFaceDetectionLoop();
+                takePhotoBtn.disabled = false;
+                cameraStatus.textContent = 'Face not detected at capture. Try again.';
+                return;
+            }
+
+            // Blend into collective
+            const collectiveImgData = blendFace(alignedFace);
+
+            // Update the collective display on the right
+            updateCollectiveDisplay(collectiveImgData);
+
+            // Hide processing overlay
+            processingOverlay.classList.remove('active');
+
+            // Show success toast briefly
+            document.getElementById('toast-count').textContent = faceCount;
+            successToast.classList.add('show');
+
+            // Save to Supabase (async, don't block the UI)
+            saveCollectiveToSupabase(email);
+
+            // After 2.5 seconds, hide toast and go back to email entry
+            await new Promise(r => setTimeout(r, 2500));
+            successToast.classList.remove('show');
+
+            // Reset to email entry for next participant
+            await new Promise(r => setTimeout(r, 300));
+            emailInput.value = '';
+            showEmailView();
+        }
+
+        // === EVENT LISTENERS ===
+        let currentEmail = '';
+
+        submitBtn.addEventListener('click', () => {
+            const email = emailInput.value.trim();
+            if (!email) {
+                errorMsg.textContent = 'Please enter your email address to continue';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            if (!validateEmail(email)) {
+                errorMsg.textContent = 'Please enter a valid email address';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            errorMsg.style.display = 'none';
+            currentEmail = email;
+            goToCamera();
+        });
+
+        skipBtn.addEventListener('click', () => {
+            errorMsg.style.display = 'none';
+            currentEmail = '';
+            goToCamera();
+        });
+
+        emailInput.addEventListener('input', () => errorMsg.style.display = 'none');
+        emailInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitBtn.click();
+        });
+
+        async function goToCamera() {
+            showCameraView();
+            if (!faceLandmarker) await initFaceLandmarker();
+            await startCamera();
+            startFaceDetectionLoop();
+        }
+
+        // Take Photo
+        takePhotoBtn.addEventListener('click', async () => {
+            if (countdownActive) return;
+
+            if (!faceStableStart || (performance.now() - faceStableStart) / 1000 < FACE_STABLE_TIME) {
+                cameraStatus.textContent = 'Hold your face steady in the center first';
+                return;
+            }
+
+            await captureFromLiveFeed(currentEmail);
+        });
+
+        // Waiver modal
+        document.getElementById('waiver-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('waiver-modal').classList.add('active');
+        });
+        document.getElementById('waiver-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('waiver-modal')) {
+                document.getElementById('waiver-modal').classList.remove('active');
+            }
+        });
+
+        // === INIT ===
+        console.log('Collective Memory Web — Supabase Connected');
+        console.log('Face size:', FACE_SIZE, 'px');
+
+        // Load existing collective from Supabase on page load
+        loadExistingCollective();
+
+        // Subscribe to realtime updates (for display on other devices)
+        subscribeToRealtime();
+
+    </script>
+</body>
+</html>
