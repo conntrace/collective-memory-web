@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collective Memory — Your Gallery</title>
+    <link rel="stylesheet" href="https://use.typekit.net/ohy6tqg.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* === HEADER === */
+        .page-header {
+            background: #323232;
+            padding: 30px 40px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .page-header img {
+            height: 60px;
+            opacity: 0.9;
+        }
+        .header-text h1 {
+            font-family: 'larken', 'Times New Roman', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+        .header-text p {
+            color: rgba(255,255,255,0.6);
+            font-size: 15px;
+            font-weight: 300;
+        }
+
+        /* === INTRO === */
+        .intro {
+            max-width: 800px;
+            margin: 40px auto 10px;
+            padding: 0 24px;
+            text-align: center;
+        }
+        .intro h2 {
+            font-family: 'larken', serif;
+            font-size: 32px;
+            color: #323232;
+            margin-bottom: 12px;
+        }
+        .intro p {
+            color: #666;
+            font-size: 17px;
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        /* === GALLERY SECTION === */
+        .gallery-section {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+        .image-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+        .image-card img {
+            width: 100%;
+            display: block;
+        }
+        .image-card-body {
+            padding: 28px 32px;
+        }
+        .image-card-body h3 {
+            font-family: 'larken', serif;
+            font-size: 22px;
+            color: #323232;
+            margin-bottom: 8px;
+        }
+        .image-card-body p {
+            color: #888;
+            font-size: 15px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .card-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 28px;
+            font-size: 16px;
+            font-family: 'Source Sans 3', sans-serif;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-download {
+            background: #323232;
+            color: white;
+        }
+        .btn-download:hover {
+            background: #4a4a4a;
+        }
+        .btn-purchase {
+            background: white;
+            color: #323232;
+            border: 2px solid #323232;
+        }
+        .btn-purchase:hover {
+            background: #323232;
+            color: white;
+        }
+
+        /* === FOOTER === */
+        .page-footer {
+            text-align: center;
+            padding: 40px 24px 60px;
+            color: #999;
+            font-size: 14px;
+        }
+        .page-footer a {
+            color: #666;
+        }
+
+        /* === ERROR STATE === */
+        .error-container {
+            max-width: 500px;
+            margin: 120px auto;
+            text-align: center;
+            padding: 0 24px;
+        }
+        .error-container h2 {
+            font-family: 'larken', serif;
+            font-size: 28px;
+            color: #323232;
+            margin-bottom: 12px;
+        }
+        .error-container p {
+            color: #888;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* === LOADING STATE === */
+        .loading {
+            text-align: center;
+            padding: 80px 24px;
+            color: #999;
+            font-size: 18px;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 600px) {
+            .page-header {
+                padding: 20px 20px;
+                gap: 16px;
+            }
+            .page-header img { height: 40px; }
+            .header-text h1 { font-size: 22px; }
+            .header-text p { font-size: 13px; }
+            .intro h2 { font-size: 26px; }
+            .image-card-body { padding: 20px 24px; }
+            .image-card-body h3 { font-size: 20px; }
+            .card-buttons { flex-direction: column; }
+            .btn { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <img src="UDC logo-HORIZ-1PMS_white.png" alt="UDC Logo">
+        <div class="header-text">
+            <h1>We Are All CAS</h1>
+            <p>Collective Memory — 175 Years of Learning and Legacy</p>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT (populated by JS) -->
+    <div id="content">
+        <div class="loading">Loading your gallery...</div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="page-footer">
+        <p>Collective Memory &copy; 2026 Connor Tracy<br>
+        University of the District of Columbia, College of Arts and Sciences</p>
+    </div>
+
+    <script>
+        // === CONFIG ===
+        const SUPABASE_URL = 'https://iwksbbhgytttsdjzckku.supabase.co';
+        const BUCKET = 'collective-memory';
+        const TOTAL_PARTICIPANTS = 36;
+
+        // Squarespace product page URL — UPDATE THIS after creating the product
+        const PURCHASE_URL = '#'; // e.g., 'https://connortracy.com/shop/collective-memory-print'
+
+        // === GET PARTICIPANT NUMBER FROM URL ===
+        const params = new URLSearchParams(window.location.search);
+        const participantNum = parseInt(params.get('p'));
+
+        // === HELPER: Supabase public URL ===
+        function storageUrl(path) {
+            return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+        }
+
+        // === HELPER: Zero-padded number ===
+        function pad(num) {
+            return String(num).padStart(3, '0');
+        }
+
+        // === RENDER ===
+        const content = document.getElementById('content');
+
+        if (!participantNum || participantNum < 1 || participantNum > TOTAL_PARTICIPANTS) {
+            // Invalid or missing participant
+            content.innerHTML = `
+                <div class="error-container">
+                    <h2>Gallery Not Found</h2>
+                    <p>This link doesn't appear to be valid. If you participated in the "We Are All CAS" event, please check the link in your email.</p>
+                </div>
+            `;
+        } else {
+            const collectiveUrl = storageUrl('event/collective.jpg');
+            const snapshotUrl = storageUrl(`event/snapshots/participant_${pad(participantNum)}.jpg`);
+
+            content.innerHTML = `
+                <!-- INTRO -->
+                <div class="intro">
+                    <h2>Thank you for participating!</h2>
+                    <p>You were Participant #${participantNum} in the Collective Memory project at the College of Arts and Sciences reception. Below are your images from the event — you can download them or purchase a signed and framed print.</p>
+                </div>
+
+                <div class="gallery-section">
+
+                    <!-- COLLECTIVE PORTRAIT -->
+                    <div class="image-card">
+                        <img src="${collectiveUrl}" alt="The Collective Portrait" loading="lazy">
+                        <div class="image-card-body">
+                            <h3>The Collective Portrait</h3>
+                            <p>The final composite of all ${TOTAL_PARTICIPANTS} participants — a portrait that represents everyone who was part of the event.</p>
+                            <div class="card-buttons">
+                                <a class="btn btn-download" href="${collectiveUrl}" download="Collective_Memory_Portrait.jpg">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Download
+                                </a>
+                                <a class="btn btn-purchase" href="${PURCHASE_URL}" target="_blank">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                                    Purchase Print
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PARTICIPANT SNAPSHOT -->
+                    <div class="image-card">
+                        <img src="${snapshotUrl}" alt="Your Snapshot — Participant #${participantNum}" loading="lazy">
+                        <div class="image-card-body">
+                            <h3>Your Snapshot — Participant #${participantNum}</h3>
+                            <p>The collective portrait at the moment you were added. This captures the state of the composite when your face became part of it.</p>
+                            <div class="card-buttons">
+                                <a class="btn btn-download" href="${snapshotUrl}" download="Collective_Memory_Snapshot_${pad(participantNum)}.jpg">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    Download
+                                </a>
+                                <a class="btn btn-purchase" href="${PURCHASE_URL}" target="_blank">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                                    Purchase Print
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+        }
+    </script>
+
+</body>
+</html>
